@@ -27,8 +27,11 @@ class Storage {
     }
 
     getUser(username) {
+        if (!username) return null;
         const users = this.getUsers();
-        return users[username];
+        // Case-insensitive lookup
+        const foundKey = Object.keys(users).find(k => k.toLowerCase() === username.toLowerCase());
+        return users[foundKey];
     }
 
     createUser(user) {
