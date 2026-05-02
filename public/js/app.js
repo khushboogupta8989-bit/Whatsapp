@@ -35,7 +35,10 @@ function switchAppView(viewName) {
     document.getElementById(`view-${viewName}`).classList.add('active');
     
     if (viewName === 'analytics') {
-        loadCampaignHistory();
+        loadCampaignHistory('campaign-history-body');
+    } else if (viewName === 'dashboard') {
+        updateDashboardStats();
+        loadCampaignHistory('dashboard-campaign-history', 5);
     }
 }
 
@@ -209,18 +212,50 @@ async function validateNumbers() {
     if (!numbers.length) return showToast('Please enter numbers', true);
     
     const resultsBox = document.getElementById('filter-results');
-    resultsBox.innerHTML = '<p>Validating...</p>';
+    resultsBox.innerHTML = `
+        <div style="text-align:center; padding:20px">
+            <div class="loader" style="margin: 0 auto 10px auto"></div>
+            <p>Validating ${numbers.length} numbers...</p>
+        </div>
+    `;
     
     try {
         const data = await apiCall('/whatsapp/validate', 'POST', { numbers });
-        let html = '<h4>Results:</h4><ul>';
+        const validNumbers = [];
+        let html = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px">
+                <h4 style="margin:0">Validation Results:</h4>
+                <button id="copy-valid-btn" class="btn primary-btn" style="padding:5px 10px; font-size:0.8rem" disabled>
+                    <i class="fa-solid fa-copy"></i> Copy Valid
+                </button>
+            </div>
+            <ul class="results-list" style="max-height:300px; overflow-y:auto; padding:0; margin:0; list-style:none">
+        `;
+        
         for (const [num, isValid] of Object.entries(data.results)) {
-            const icon = isValid ? '<i class="fa-solid fa-check" style="color:var(--primary)"></i>' : '<i class="fa-solid fa-xmark" style="color:var(--danger)"></i>';
-            html += `<li>${icon} ${num}: ${isValid ? 'Valid' : 'Invalid'}</li>`;
+            if (isValid) validNumbers.push(num);
+            const icon = isValid ? '<i class="fa-solid fa-circle-check" style="color:var(--primary)"></i>' : '<i class="fa-solid fa-circle-xmark" style="color:var(--danger)"></i>';
+            html += `
+                <li style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid rgba(255,255,255,0.05)">
+                    <span>${num}</span>
+                    <span>${icon} ${isValid ? '<span style="color:var(--primary)">Valid</span>' : '<span style="color:var(--danger)">Invalid</span>'}</span>
+                </li>
+            `;
         }
         html += '</ul>';
         resultsBox.innerHTML = html;
-    } catch (e) {}
+
+        if (validNumbers.length > 0) {
+            const copyBtn = document.getElementById('copy-valid-btn');
+            copyBtn.disabled = false;
+            copyBtn.onclick = () => {
+                navigator.clipboard.writeText(validNumbers.join(', '));
+                showToast(`Copied ${validNumbers.length} valid numbers!`);
+            };
+        }
+    } catch (e) {
+        resultsBox.innerHTML = `<p style="color:var(--danger)">Error: ${e.message}</p>`;
+    }
 }
 
 // Auto Reply
@@ -281,24 +316,31 @@ async function updateDashboardStats() {
         const data = await apiCall('/campaigns/stats');
         document.getElementById('stat-total-sent').innerText = data.totalSent || 0;
         document.getElementById('stat-failed').innerText = data.totalFailed || 0;
+        loadCampaignHistory('dashboard-campaign-history', 5);
     } catch (e) {
         console.error('Failed to fetch stats:', e);
     }
 }
 
 // Analytics History
-async function loadCampaignHistory() {
+async function loadCampaignHistory(targetId = 'campaign-history-body', limit = null) {
     try {
         const data = await apiCall('/campaigns');
-        const body = document.getElementById('campaign-history-body');
+        const body = document.getElementById(targetId);
+        if (!body) return;
         
-        if (!data.campaigns || data.campaigns.length === 0) {
-            body.innerHTML = '<tr><td colspan="5" style="text-align:center">No campaigns found.</td></tr>';
+        let campaigns = data.campaigns || [];
+        if (limit) {
+            campaigns = campaigns.slice(0, limit);
+        }
+
+        if (campaigns.length === 0) {
+            body.innerHTML = `<tr><td colspan="5" style="text-align:center">No ${limit ? 'recent ' : ''}campaigns found.</td></tr>`;
             return;
         }
 
         let html = '';
-        data.campaigns.forEach(c => {
+        campaigns.forEach(c => {
             const date = new Date(c.createdAt).toLocaleString();
             html += `
                 <tr>

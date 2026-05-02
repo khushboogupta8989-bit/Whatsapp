@@ -107,7 +107,31 @@
                             </div>
                         </div>
                     </div>
+                    <div class="glass-card mt-1">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px">
+                        <h3 style="margin:0">Recent Campaigns</h3>
+                        <button onclick="switchAppView('analytics')" class="btn" style="padding:5px 10px; font-size:0.7rem; background:rgba(255,255,255,0.05)">View All</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Date</th>
+                                    <th>Sent</th>
+                                    <th>Failed</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashboard-campaign-history">
+                                <tr>
+                                    <td colspan="5" style="text-align:center">Loading recent campaigns...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
+            </div>
             </div>
 
             <!-- Analytics View -->
