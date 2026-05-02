@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const usersFile = path.join(__dirname, '..', '..', 'users.json');
-const repliesFile = path.join(__dirname, '..', '..', 'autoreplies.json');
+const usersFile = path.join(__dirname, '..', '..', 'sessions', 'users.json');
+const repliesFile = path.join(__dirname, '..', '..', 'sessions', 'autoreplies.json');
 
 // Initialize files if they don't exist
 if (!fs.existsSync(usersFile)) {
