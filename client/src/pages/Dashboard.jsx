@@ -38,9 +38,8 @@ const Dashboard = () => {
 
     return (
         <div className="space-y-8 pb-10">
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 items-start">
+            <div className="max-w-4xl">
                 <WhatsAppStatus />
-                <NumberValidator />
             </div>
 
             <div className="bg-dark-card p-6 rounded-2xl border border-dark-border">
