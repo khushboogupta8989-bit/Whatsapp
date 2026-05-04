@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Bulk Automation Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- Load simple external icon library -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="background-anim"></div>
+    
+    <div id="toast-container"></div>
+
+    <!-- Login / Register Section -->
+    <div id="auth-view" class="view active">
+        <div class="glass-card auth-card">
+            <h1 class="brand-title"><i class="fa-brands fa-whatsapp"></i> WA Platform</h1>
+            <p class="subtitle">Premium Bulk Messaging & Automation</p>
+            
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchAuthTab('login')">Login</button>
+                <button class="tab-btn" onclick="switchAuthTab('register')">Register</button>
+            </div>
+
+            <form id="login-form" class="auth-form active" onsubmit="handleAuth(event, 'login')">
+                <div class="input-group">
+                    <label>Username</label>
+                    <input type="text" id="login-username" required>
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="login-password" required>
+                </div>
+                <button type="submit" class="btn primary-btn">Login</button>
+            </form>
+
+            <form id="register-form" class="auth-form" onsubmit="handleAuth(event, 'register')">
+                <div class="input-group">
+                    <label>Username</label>
+                    <input type="text" id="register-username" required>
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="register-password" required>
+                </div>
+                <button type="submit" class="btn primary-btn">Register</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Application UI -->
+    <div id="app-view" class="view">
+        <nav class="sidebar glass-panel">
+            <div class="brand">
+                <i class="fa-brands fa-whatsapp"></i>
+                <h2>WAPlus</h2>
+            </div>
+            <ul class="nav-links">
+                <li class="active" onclick="switchAppView('dashboard')"><i class="fa-solid fa-house"></i> Dashboard</li>
+                <li onclick="switchAppView('campaign')"><i class="fa-solid fa-paper-plane"></i> Bulk Sender</li>
+                <li onclick="switchAppView('filter')"><i class="fa-solid fa-filter"></i> Number Filter</li>
+                <li onclick="switchAppView('auto-reply')"><i class="fa-solid fa-robot"></i> Auto Reply</li>
+                <li onclick="switchAppView('analytics')"><i class="fa-solid fa-chart-pie"></i> Analytics</li>
+            </ul>
+            <div class="bottom-action">
+                <button onclick="logout()" class="btn danger-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <header class="topbar glass-panel">
+                <div class="connection-status" id="wa-status-badge">
+                    <span class="indicator disconnected"></span>
+                    <span id="wa-status-text">Disconnected</span>
+                </div>
+            </header>
+
+            <!-- Dashboard View -->
+            <div id="view-dashboard" class="content-section active">
+                <h2>Dashboard</h2>
+                <div class="grid-2">
+                    <div class="glass-card">
+                        <h3>WhatsApp Connection</h3>
+                        <div id="qr-container" class="qr-container">
+                            <p>Loading QR...</p>
+                        </div>
+                        <div class="grid-2 mt-1">
+                            <button onclick="initWhatsApp()" class="btn primary-btn" style="width:100%"><i class="fa-solid fa-qrcode"></i> Generate</button>
+                            <button onclick="resetWhatsApp()" class="btn danger-btn" style="width:100%"><i class="fa-solid fa-trash-can"></i> Reset</button>
+                        </div>
+                    </div>
+                    <div class="glass-card">
+                        <h3>Quick Stats</h3>
+                        <div class="stats-grid">
+                            <div class="stat-box">
+                                <i class="fa-solid fa-paper-plane"></i>
+                                <h4>Total Sent</h4>
+                                <p id="stat-total-sent">0</p>
+                            </div>
+                            <div class="stat-box">
+                                <i class="fa-solid fa-circle-exclamation"></i>
+                                <h4>Failed</h4>
+                                <p id="stat-failed">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="glass-card mt-1">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px">
+                        <h3 style="margin:0">Recent Campaigns</h3>
+                        <button onclick="switchAppView('analytics')" class="btn" style="padding:5px 10px; font-size:0.7rem; background:rgba(255,255,255,0.05)">View All</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Date</th>
+                                    <th>Sent</th>
+                                    <th>Failed</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashboard-campaign-history">
+                                <tr>
+                                    <td colspan="5" style="text-align:center">Loading recent campaigns...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            </div>
+
+            <!-- Analytics View -->
+            <div id="view-analytics" class="content-section">
+                <h2>Campaign Analytics</h2>
+                <div class="glass-card">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Date</th>
+                                    <th>Sent</th>
+                                    <th>Failed</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="campaign-history-body">
+                                <tr>
+                                    <td colspan="5" style="text-align:center">Loading history...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Campaign View -->
+            <div id="view-campaign" class="content-section">
+                <h2>New Bulk Campaign</h2>
+                <div class="glass-card">
+                    <form id="campaign-form" onsubmit="startCampaign(event)">
+                        <div class="input-group">
+                            <label>Campaign Name</label>
+                            <input type="text" id="camp-name" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Numbers (comma separated, include country code e.g. 91 for India)</label>
+                            <textarea id="camp-numbers" rows="3" placeholder="e.g. 919876543210, 12345678900" required></textarea>
+                        </div>
+                        <div class="input-group">
+                            <label>Message (Supports Spintax {Hi|Hello})</label>
+                            <textarea id="camp-message" rows="4" placeholder="{Hi|Hello} there! This is a test message." required></textarea>
+                        </div>
+                        <div class="grid-2">
+                            <div class="input-group">
+                                <label>Min Delay (sec)</label>
+                                <input type="number" id="camp-delay-min" value="5" min="1" required>
+                            </div>
+                            <div class="input-group">
+                                <label>Max Delay (sec)</label>
+                                <input type="number" id="camp-delay-max" value="15" min="2" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn primary-btn mt-1"><i class="fa-solid fa-play"></i> Start Campaign</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Number Filter View -->
+            <div id="view-filter" class="content-section">
+                <h2>Number Validator</h2>
+                <div class="glass-card">
+                    <div class="input-group">
+                        <label>Numbers to Validate (comma separated)</label>
+                        <textarea id="filter-numbers" rows="3" placeholder="Enter numbers to check..."></textarea>
+                    </div>
+                    <button onclick="validateNumbers()" class="btn primary-btn mt-1">Validate</button>
+                    <div id="filter-results" class="results-box mt-1"></div>
+                </div>
+            </div>
+
+            <!-- Auto Reply View -->
+            <div id="view-auto-reply" class="content-section">
+                <h2>Auto Reply Logic</h2>
+                <div class="grid-2">
+                    <div class="glass-card">
+                        <h3>Add New Rule</h3>
+                        <form id="autoreply-form" onsubmit="saveAutoReply(event)" class="mt-1">
+                            <div class="input-group">
+                                <label>Keyword (to match in message)</label>
+                                <input type="text" id="ar-keyword" placeholder="e.g. Price, Help, Hello" required>
+                            </div>
+                            <div class="input-group mt-1">
+                                <label>Automated Response</label>
+                                <textarea id="ar-reply" rows="3" placeholder="Enter the reply message..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn primary-btn mt-1">Save Rule</button>
+                        </form>
+                    </div>
+                    <div class="glass-card">
+                        <h3>Existing Rules</h3>
+                        <div id="autoreply-list" class="mt-1">
+                            <p>No rules defined yet.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </main>
+    </div>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>

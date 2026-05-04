@@ -1,4 +1,5 @@
-const router = require('../router');
+const express = require('express');
+const router = express.Router();
 const storage = require('../services/storage');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
@@ -7,16 +8,16 @@ const crypto = require('crypto');
 // In a real app, use JWT or store sessions in a file/db.
 const activeSessions = {};
 
-router.post('/api/auth/register', async (req, res) => {
+router.post('/auth/register', async (req, res) => {
     try {
         const { username, password } = req.body;
         if (!username || !password) {
-            return res.json({ error: 'Username and password required' }, 400);
+            return res.status(400).json({ error: 'Username and password required' });
         }
 
         const existingUser = storage.getUser(username);
         if (existingUser) {
-            return res.json({ error: 'User already exists' }, 400);
+            return res.status(400).json({ error: 'User already exists' });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -28,24 +29,24 @@ router.post('/api/auth/register', async (req, res) => {
         };
 
         storage.createUser(newUser);
-        res.json({ message: 'User created successfully' }, 201);
+        res.status(201).json({ message: 'User created successfully' });
     } catch (error) {
-        res.json({ error: error.message }, 500);
+        res.status(500).json({ error: error.message });
     }
 });
 
-router.post('/api/auth/login', async (req, res) => {
+router.post('/auth/login', async (req, res) => {
     try {
         const { username, password } = req.body;
         const user = storage.getUser(username);
 
         if (!user) {
-            return res.json({ error: 'Invalid credentials' }, 401);
+            return res.status(401).json({ error: 'Invalid credentials' });
         }
 
         const match = await bcrypt.compare(password, user.password);
         if (!match) {
-            return res.json({ error: 'Invalid credentials' }, 401);
+            return res.status(401).json({ error: 'Invalid credentials' });
         }
 
         const token = crypto.randomBytes(32).toString('hex');
@@ -53,7 +54,7 @@ router.post('/api/auth/login', async (req, res) => {
 
         res.json({ message: 'Login successful', token, userId: user.id });
     } catch (error) {
-        res.json({ error: error.message }, 500);
+        res.status(500).json({ error: error.message });
     }
 });
 
@@ -67,4 +68,7 @@ function getAuthenticatedUserId(req) {
     return activeSessions[token] || null;
 }
 
-module.exports = { getAuthenticatedUserId };
+// Attach getAuthenticatedUserId to router so we can require it easily
+router.getAuthenticatedUserId = getAuthenticatedUserId;
+
+module.exports = router;

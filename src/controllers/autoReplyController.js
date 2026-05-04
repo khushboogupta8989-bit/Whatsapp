@@ -1,22 +1,23 @@
-const router = require('../router');
+const express = require('express');
+const router = express.Router();
 const storage = require('../services/storage');
-const { getAuthenticatedUserId } = require('./authController');
+const authController = require('./authController');
 
-router.get('/api/autoreply', async (req, res) => {
-    const userId = getAuthenticatedUserId(req);
-    if (!userId) return res.json({ error: 'Unauthorized' }, 401);
+router.get('/autoreply', async (req, res) => {
+    const userId = authController.getAuthenticatedUserId(req);
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
     const replies = storage.getAutoReplies(userId);
     res.json({ replies });
 });
 
-router.post('/api/autoreply', async (req, res) => {
-    const userId = getAuthenticatedUserId(req);
-    if (!userId) return res.json({ error: 'Unauthorized' }, 401);
+router.post('/autoreply', async (req, res) => {
+    const userId = authController.getAuthenticatedUserId(req);
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
     const { keyword, reply } = req.body;
     if (!keyword || !reply) {
-        return res.json({ error: 'Keyword and reply are required' }, 400);
+        return res.status(400).json({ error: 'Keyword and reply are required' });
     }
 
     const replies = storage.getAutoReplies(userId);
@@ -33,13 +34,13 @@ router.post('/api/autoreply', async (req, res) => {
     res.json({ message: 'Auto-reply saved successfully', replies });
 });
 
-router.delete('/api/autoreply', async (req, res) => {
-    const userId = getAuthenticatedUserId(req);
-    if (!userId) return res.json({ error: 'Unauthorized' }, 401);
+router.delete('/autoreply', async (req, res) => {
+    const userId = authController.getAuthenticatedUserId(req);
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
     const { keyword } = req.body;
     if (!keyword) {
-        return res.json({ error: 'Keyword is required' }, 400);
+        return res.status(400).json({ error: 'Keyword is required' });
     }
 
     let replies = storage.getAutoReplies(userId);
@@ -48,3 +49,5 @@ router.delete('/api/autoreply', async (req, res) => {
     storage.saveAutoReplies(userId, replies);
     res.json({ message: 'Auto-reply deleted successfully', replies });
 });
+
+module.exports = router;

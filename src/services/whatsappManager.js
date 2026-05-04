@@ -131,19 +131,47 @@ class WhatsAppManager {
         throw new Error(`Number ${cleanNumber} is not registered on WhatsApp`);
     }
 
-    async validateNumber(userId, number) {
+    async validateNumbers(userId, numbers) {
         const sock = this.instances[userId];
         if (!sock || this.status[userId] !== 'connected') {
             throw new Error('WhatsApp not connected');
         }
+
+        const jids = numbers.map(num => {
+            let cleanNumber = num.replace(/\D/g, '');
+            if (cleanNumber.length === 10) {
+                cleanNumber = '91' + cleanNumber;
+            }
+            return cleanNumber.includes('@s.whatsapp.net') ? cleanNumber : `${cleanNumber}@s.whatsapp.net`;
+        });
+
+        // Baileys onWhatsApp can take an array but it's more reliable in small batches
+        // or individually if checking existence. However, passing the whole array is faster.
+        const results = await sock.onWhatsApp(...jids);
         
-        let cleanNumber = number.replace(/\D/g, '');
-        if (cleanNumber.length === 10) {
-            cleanNumber = '91' + cleanNumber;
-        }
-        const jid = cleanNumber.includes('@s.whatsapp.net') ? cleanNumber : `${cleanNumber}@s.whatsapp.net`;
-        const [result] = await sock.onWhatsApp(jid);
-        return result?.exists || false;
+        const resultMap = {};
+        // Initialize all as false
+        numbers.forEach(num => resultMap[num] = false);
+        
+        // Mark existing ones as true
+        results.forEach(res => {
+            // Find which input number matches this jid
+            const matchedNum = numbers.find(n => {
+                let clean = n.replace(/\D/g, '');
+                if (clean.length === 10) clean = '91' + clean;
+                return res.jid.startsWith(clean);
+            });
+            if (matchedNum) {
+                resultMap[matchedNum] = res.exists;
+            }
+        });
+
+        return resultMap;
+    }
+
+    async validateNumber(userId, number) {
+        const results = await this.validateNumbers(userId, [number]);
+        return results[number] || false;
     }
 
     async logout(userId) {

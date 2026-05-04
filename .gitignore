@@ -5,3 +5,6 @@ users.json
 autoreplies.json
 .DS_Store
 *.log
+client/node_modules/
+client/dist/
+uploads/
