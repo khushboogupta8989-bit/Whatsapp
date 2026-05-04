@@ -23,18 +23,20 @@ const Dashboard = () => {
 
     if (loading) return <div className="text-dark-muted">Loading dashboard...</div>;
 
-    const pieData = [
+    const hasData = stats.totalMessages > 0;
+    const pieData = hasData ? [
         { name: 'Success', value: stats.totalSent },
         { name: 'Failed', value: stats.totalFailed }
-    ];
-    const COLORS = ['#10B981', '#EF4444'];
+    ] : [{ name: 'No Data', value: 1 }];
+    
+    const COLORS = hasData ? ['#10B981', '#EF4444'] : ['#334155'];
 
     const completionRate = stats.totalMessages > 0 
         ? Math.round(((stats.totalSent + stats.totalFailed) / stats.totalMessages) * 100) 
         : 0;
 
     return (
-        <div>
+        <div className="animate-in fade-in duration-500">
             <h1 className="text-3xl font-bold mb-8">Dashboard Overview</h1>
 
             {/* Stat Cards */}
@@ -85,32 +87,42 @@ const Dashboard = () => {
                 <div className="bg-dark-card p-6 rounded-2xl border border-dark-border">
                     <h2 className="text-xl font-bold mb-6">Success vs Failed</h2>
                     <div className="h-64">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie
-                                    data={pieData}
-                                    cx="50%"
-                                    cy="50%"
-                                    innerRadius={60}
-                                    outerRadius={80}
-                                    paddingAngle={5}
-                                    dataKey="value"
-                                >
-                                    {pieData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                    ))}
-                                </Pie>
-                                <RechartsTooltip 
-                                    contentStyle={{ backgroundColor: '#1E293B', border: '1px solid #334155', borderRadius: '8px' }}
-                                    itemStyle={{ color: '#F8FAFC' }}
-                                />
-                            </PieChart>
-                        </ResponsiveContainer>
+                        {hasData ? (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={pieData}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={60}
+                                        outerRadius={80}
+                                        paddingAngle={5}
+                                        dataKey="value"
+                                        isAnimationActive={false}
+                                    >
+                                        {pieData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <RechartsTooltip 
+                                        contentStyle={{ backgroundColor: '#1E293B', border: '1px solid #334155', borderRadius: '8px' }}
+                                        itemStyle={{ color: '#F8FAFC' }}
+                                    />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div className="h-full flex flex-col items-center justify-center text-dark-muted">
+                                <Activity className="w-12 h-12 mb-2 opacity-20" />
+                                <p>No campaign data yet</p>
+                            </div>
+                        )}
                     </div>
-                    <div className="flex justify-center gap-6 mt-4">
-                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-success"></div><span className="text-sm">Success</span></div>
-                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-danger"></div><span className="text-sm">Failed</span></div>
-                    </div>
+                    {hasData && (
+                        <div className="flex justify-center gap-6 mt-4">
+                            <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-success"></div><span className="text-sm">Success</span></div>
+                            <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-danger"></div><span className="text-sm">Failed</span></div>
+                        </div>
+                    )}
                 </div>
 
                 <div className="bg-dark-card p-6 rounded-2xl border border-dark-border flex flex-col justify-center items-center text-center">
