@@ -23,6 +23,16 @@ const WhatsAppStatus = () => {
         return () => clearInterval(interval);
     }, []);
 
+    // AUTO-START: Start session automatically if disconnected
+    useEffect(() => {
+        if (status === 'disconnected' && !loading) {
+            const timer = setTimeout(() => {
+                handleInit();
+            }, 2000);
+            return () => clearTimeout(timer);
+        }
+    }, [status]);
+
     const handleInit = async () => {
         setLoading(true);
         try {
