@@ -9,25 +9,26 @@ import Login from './pages/Login';
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('waplus_token'));
 
+  const login = () => setIsAuthenticated(true);
+  const logout = () => {
+    localStorage.removeItem('waplus_token');
+    setIsAuthenticated(false);
+  };
+
+  if (!isAuthenticated) {
+    return <Login onLogin={login} />;
+  }
+
   return (
     <BrowserRouter>
       <Routes>
-        <Route 
-          path="/login" 
-          element={!isAuthenticated ? <Login onLogin={() => setIsAuthenticated(true)} /> : <Navigate to="/dashboard" replace />} 
-        />
-        
-        <Route 
-          path="/" 
-          element={isAuthenticated ? <Layout onLogout={() => { localStorage.removeItem('waplus_token'); setIsAuthenticated(false); }} /> : <Navigate to="/login" replace />}
-        >
+        <Route path="/" element={<Layout onLogout={logout} />}>
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="campaigns" element={<Campaigns />} />
           <Route path="history" element={<History />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>
-
-        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
