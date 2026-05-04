@@ -83,7 +83,7 @@ const WhatsAppStatus = () => {
                 <div className="flex flex-col items-center p-6 bg-white rounded-xl">
                     <img src={qrCode} alt="WhatsApp QR Code" className="w-64 h-64" />
                     <p className="text-black text-sm mt-4 text-center font-medium">
-                        Open WhatsApp on your phone > Menu or Settings > Linked Devices > Link a Device
+                        Open WhatsApp on your phone → Menu or Settings → Linked Devices → Link a Device
                     </p>
                 </div>
             )}
