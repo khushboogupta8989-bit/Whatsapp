@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://localhost:3000/api', // During dev, assume backend is on 3000
+    baseURL: '/api', // Relative path works for both local and Render
 });
 
 // Add a request interceptor to add the auth token
