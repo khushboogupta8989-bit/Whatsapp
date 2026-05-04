@@ -34,7 +34,7 @@ app.use('/api', autoReplyRoutes);
 // Serve Static React Build
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.get('/:path(.*)', (req, res) => {
+app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
