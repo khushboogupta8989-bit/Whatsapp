@@ -8,8 +8,13 @@ router.post('/whatsapp/init', async (req, res) => {
     const userId = authController.getAuthenticatedUserId(req);
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
-    await whatsappManager.initSession(userId);
-    res.json({ message: 'Session initialization started' });
+    try {
+        await whatsappManager.initSession(userId);
+        res.json({ message: 'Session initialization started' });
+    } catch (e) {
+        console.error('Session init error:', e);
+        res.status(500).json({ error: 'Failed to start WhatsApp engine: ' + e.message });
+    }
 });
 
 router.get('/whatsapp/status', async (req, res) => {
