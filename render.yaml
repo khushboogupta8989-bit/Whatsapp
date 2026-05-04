@@ -2,7 +2,7 @@ services:
   - type: web
     name: whatsapp-agent
     env: node
-    buildCommand: npm install
+    buildCommand: npm run build
     startCommand: node server.js
     envVars:
       - key: NODE_ENV
