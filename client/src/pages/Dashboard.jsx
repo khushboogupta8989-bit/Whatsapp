@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
+import WhatsAppStatus from '../components/WhatsAppStatus';
 
 const Dashboard = () => {
     const [stats, setStats] = useState({ totalSent: 0, totalFailed: 0, totalMessages: 0 });
@@ -39,6 +40,7 @@ const Dashboard = () => {
 
         return (
             <div className="p-4 md:p-0">
+                <WhatsAppStatus />
                 <h1 className="text-3xl font-bold mb-8">WAPlus Dashboard</h1>
 
                 {/* Stat Cards */}
