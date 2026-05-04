@@ -1,11 +1,12 @@
 import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
-import { LayoutDashboard, Megaphone, History, LogOut } from 'lucide-react';
+import { LayoutDashboard, Megaphone, History, LogOut, Search } from 'lucide-react';
 
 const Sidebar = ({ onLogout }) => {
     const navItems = [
         { path: '/dashboard', name: 'Dashboard', icon: LayoutDashboard },
         { path: '/campaigns', name: 'Campaigns', icon: Megaphone },
+        { path: '/validator', name: 'Number Filter', icon: Search },
         { path: '/history', name: 'History', icon: History },
     ];
 

@@ -4,7 +4,7 @@ import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Campaigns from './pages/Campaigns';
 import History from './pages/History';
-import Login from './pages/Login';
+import ValidatorPage from './pages/Validator';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('waplus_token'));
@@ -26,6 +26,7 @@ function App() {
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="campaigns" element={<Campaigns />} />
+          <Route path="validator" element={<ValidatorPage />} />
           <Route path="history" element={<History />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>
