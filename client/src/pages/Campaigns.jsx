@@ -17,9 +17,7 @@ const Campaigns = () => {
     const fetchCampaigns = async () => {
         try {
             const res = await api.get('/campaigns');
-            // Show only running or paused on this screen
-            const active = res.data.campaigns.filter(c => c.status === 'running' || c.status === 'paused');
-            setCampaigns(active);
+            setCampaigns(res.data.campaigns);
         } catch (error) {
             console.error("Error fetching campaigns:", error);
         }
@@ -228,9 +226,18 @@ const Campaigns = () => {
                                         <div className="flex justify-between items-start mb-4">
                                             <div>
                                                 <h3 className="font-bold text-lg">{camp.name}</h3>
-                                                <span className={`text-xs px-2 py-1 rounded-full ${camp.simulationMode ? 'bg-primary/20 text-primary' : 'bg-success/20 text-success'}`}>
-                                                    {camp.simulationMode ? 'Simulation' : 'Real Mode'}
+                                                <span className={`text-[10px] uppercase font-bold px-2 py-1 rounded-md ${
+                                                    camp.status === 'completed' ? 'bg-success text-white' : 
+                                                    camp.status === 'running' ? 'bg-primary/20 text-primary' : 
+                                                    'bg-dark-muted/20 text-dark-muted'
+                                                }`}>
+                                                    {camp.status}
                                                 </span>
+                                                {camp.simulationMode && (
+                                                    <span className="ml-2 text-[10px] uppercase font-bold px-2 py-1 rounded-md bg-warning/20 text-warning">
+                                                        Simulation
+                                                    </span>
+                                                )}
                                             </div>
                                             <div className="flex gap-2">
                                                 {camp.status === 'running' ? (
