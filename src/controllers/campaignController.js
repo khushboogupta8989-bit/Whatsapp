@@ -33,9 +33,13 @@ router.post('/campaign/start', upload.single('file'), async (req, res) => {
             
             // Clean up uploaded file
             fs.unlinkSync(req.file.path);
-        } else if (req.body.contacts) {
-            // Alternatively, manual contacts as JSON array string
-            contacts = JSON.parse(req.body.contacts);
+        } else if (req.body.manualNumbers) {
+            // Parse from manual input (comma or newline separated)
+            const lines = req.body.manualNumbers.split(/[\n,]/);
+            contacts = lines.map(line => {
+                const num = line.trim();
+                return { name: 'Customer', phone: num };
+            }).filter(c => c.phone.length >= 10);
         }
 
         // Deduplicate numbers

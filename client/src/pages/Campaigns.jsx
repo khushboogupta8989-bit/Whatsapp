@@ -5,12 +5,14 @@ import { Play, Pause, Square, UploadCloud, RefreshCw } from 'lucide-react';
 const Campaigns = () => {
     const [campaigns, setCampaigns] = useState([]);
     const [file, setFile] = useState(null);
+    const [manualNumbers, setManualNumbers] = useState('');
     const [name, setName] = useState('');
     const [message, setMessage] = useState('Hi {{name}}, this is a message.');
     const [delayMin, setDelayMin] = useState(5);
     const [delayMax, setDelayMax] = useState(15);
     const [simulationMode, setSimulationMode] = useState(false);
     const [creating, setCreating] = useState(false);
+    const [inputType, setInputType] = useState('file'); // 'file' or 'manual'
 
     const fetchCampaigns = async () => {
         try {
@@ -40,12 +42,22 @@ const Campaigns = () => {
         formData.append('delayMax', delayMax);
         formData.append('simulationMode', simulationMode);
         
-        if (file) {
-            formData.append('file', file);
+        if (inputType === 'file') {
+            if (file) {
+                formData.append('file', file);
+            } else {
+                alert('Please upload an Excel file.');
+                setCreating(false);
+                return;
+            }
         } else {
-            alert('Please upload an Excel file.');
-            setCreating(false);
-            return;
+            if (manualNumbers.trim()) {
+                formData.append('manualNumbers', manualNumbers);
+            } else {
+                alert('Please enter at least one phone number.');
+                setCreating(false);
+                return;
+            }
         }
 
         try {
@@ -54,6 +66,7 @@ const Campaigns = () => {
             });
             setName('');
             setFile(null);
+            setManualNumbers('');
             fetchCampaigns();
         } catch (error) {
             alert(error.response?.data?.error || 'Error creating campaign');
@@ -95,16 +108,46 @@ const Campaigns = () => {
                             />
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-dark-muted mb-1">Upload Contacts (.xlsx)</label>
-                            <input
-                                type="file"
-                                accept=".xlsx"
-                                onChange={(e) => setFile(e.target[0] || e.target.files[0])}
-                                className="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary-hover"
-                            />
-                            <p className="text-xs text-dark-muted mt-1">Excel must contain "Name" and "Phone" columns.</p>
+                        <div className="flex bg-dark-bg p-1 rounded-xl border border-dark-border mb-4">
+                            <button
+                                type="button"
+                                onClick={() => setInputType('file')}
+                                className={`flex-1 py-2 px-4 rounded-lg text-sm font-bold transition-all ${inputType === 'file' ? 'bg-primary text-white shadow-lg' : 'text-dark-muted hover:text-dark-text'}`}
+                            >
+                                Excel Upload
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setInputType('manual')}
+                                className={`flex-1 py-2 px-4 rounded-lg text-sm font-bold transition-all ${inputType === 'manual' ? 'bg-primary text-white shadow-lg' : 'text-dark-muted hover:text-dark-text'}`}
+                            >
+                                Manual Entry
+                            </button>
                         </div>
+
+                        {inputType === 'file' ? (
+                            <div>
+                                <label className="block text-sm font-medium text-dark-muted mb-1">Upload Contacts (.xlsx)</label>
+                                <input
+                                    type="file"
+                                    accept=".xlsx"
+                                    onChange={(e) => setFile(e.target[0] || e.target.files[0])}
+                                    className="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/20 file:text-primary hover:file:bg-primary/30 transition-all"
+                                />
+                                <p className="text-[10px] text-dark-muted mt-2 uppercase font-bold tracking-wider">Required columns: "Name", "Phone"</p>
+                            </div>
+                        ) : (
+                            <div>
+                                <label className="block text-sm font-medium text-dark-muted mb-1">Enter Numbers (One per line or comma separated)</label>
+                                <textarea
+                                    rows="4"
+                                    value={manualNumbers}
+                                    onChange={(e) => setManualNumbers(e.target.value)}
+                                    className="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-3 focus:outline-none focus:border-primary resize-none"
+                                    placeholder="918956716785&#10;919876543210"
+                                />
+                            </div>
+                        )}
 
                         <div>
                             <label className="block text-sm font-medium text-dark-muted mb-1">Message Template</label>
