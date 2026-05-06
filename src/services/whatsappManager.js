@@ -69,7 +69,7 @@ class WhatsAppManager {
             auth: state,
             printQRInTerminal: false,
             logger,
-            browser: ['WAPlus', 'Chrome', '1.0.0'],
+            browser: ['Ubuntu', 'Chrome', '20.0.04'],
             connectTimeoutMs: 60000,
             defaultQueryTimeoutMs: 0,
             keepAliveIntervalMs: 10000,
