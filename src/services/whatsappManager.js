@@ -104,9 +104,9 @@ class WhatsAppManager {
                     delete this.qrCodes[userId];
                 }
             } else if (connection === 'open') {
-                console.log(`[WhatsApp] Connection opened for ${userId}`);
+                console.log(`[WhatsApp] Connection opened for ${userId} as ${sock.user?.id}`);
                 this.status[userId] = 'connected';
-                delete this.qrCodes[userId];
+                this.qrCodes[userId] = null;
             }
         });
 
@@ -142,7 +142,16 @@ class WhatsAppManager {
     }
 
     getStatus(userId) {
-        return this.status[userId] || 'disconnected';
+        const sock = this.instances[userId];
+        const status = this.status[userId] || 'disconnected';
+        
+        return {
+            status,
+            user: sock?.user ? {
+                id: sock.user.id,
+                name: sock.user.name || sock.user.verifiedName || 'WhatsApp User'
+            } : null
+        };
     }
 
     getError(userId) {

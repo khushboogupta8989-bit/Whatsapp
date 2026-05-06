@@ -6,6 +6,7 @@ const WhatsAppStatus = () => {
     const [status, setStatus] = useState('disconnected');
     const [qrCode, setQrCode] = useState(null);
     const [error, setError] = useState(null);
+    const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(false);
 
     const fetchStatus = async () => {
@@ -14,6 +15,7 @@ const WhatsAppStatus = () => {
             setStatus(res.data.status);
             setQrCode(res.data.qrCode);
             setError(res.data.error);
+            setUser(res.data.user);
         } catch (error) {
             console.error("Error fetching WhatsApp status:", error);
         }
@@ -132,8 +134,14 @@ const WhatsAppStatus = () => {
             {status === 'connected' && (
                 <div className="flex flex-col items-center p-8 bg-success/5 rounded-xl border border-success/20">
                     <CheckCircle className="w-16 h-16 text-success mb-4" />
-                    <h3 className="text-xl font-bold text-success mb-2">Device Linked Successfully</h3>
-                    <p className="text-dark-muted text-center mb-6">Your WhatsApp account is active and connected to the automation engine.</p>
+                    <h3 className="text-xl font-bold text-success mb-1">Device Linked Successfully</h3>
+                    {user && (
+                        <div className="flex flex-col items-center mb-6">
+                            <p className="text-dark-text font-medium">{user.name}</p>
+                            <p className="text-dark-muted text-xs">{user.id.split(':')[0]}</p>
+                        </div>
+                    )}
+                    <p className="text-dark-muted text-center mb-6 max-w-xs">Your WhatsApp account is active and connected to the automation engine.</p>
                     <button
                         onClick={handleLogout}
                         disabled={loading}

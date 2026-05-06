@@ -21,7 +21,7 @@ router.get('/whatsapp/status', async (req, res) => {
     const userId = authController.getAuthenticatedUserId(req);
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
-    const status = whatsappManager.getStatus(userId);
+    const { status, user } = whatsappManager.getStatus(userId);
     const qrText = whatsappManager.getQR(userId);
     const error = whatsappManager.getError(userId);
 
@@ -34,7 +34,7 @@ router.get('/whatsapp/status', async (req, res) => {
         }
     }
 
-    res.json({ status, qrCode: qrCodeBase64, error });
+    res.json({ status, qrCode: qrCodeBase64, error, user });
 });
 
 router.post('/whatsapp/logout', async (req, res) => {
