@@ -70,16 +70,18 @@ class WhatsAppManager {
             printQRInTerminal: false,
             logger,
             browser: ['Ubuntu', 'Chrome', '20.0.04'],
-            connectTimeoutMs: 60000,
+            connectTimeoutMs: 90000,
             defaultQueryTimeoutMs: 0,
-            keepAliveIntervalMs: 10000,
+            keepAliveIntervalMs: 30000,
+            syncFullHistory: false,
+            markOnlineOnConnect: true,
         });
 
         this.instances[userId] = sock;
 
         sock.ev.on('creds.update', saveCreds);
 
-        sock.ev.on('connection.update', (update) => {
+        sock.ev.on('connection.update', async (update) => {
             const { connection, lastDisconnect, qr } = update;
             
             if (qr) {
@@ -90,11 +92,18 @@ class WhatsAppManager {
             if (connection === 'close') {
                 const statusCode = lastDisconnect?.error?.output?.statusCode;
                 const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+                
                 console.log(`[WhatsApp] Connection closed for ${userId}. Reason: ${statusCode}, Reconnecting: ${shouldReconnect}`);
                 
                 this.status[userId] = 'disconnected';
+                this.qrCodes[userId] = null;
+
                 if (shouldReconnect) {
-                    this.initSession(userId);
+                    // Add a small delay before reconnecting to avoid spamming
+                    console.log(`[WhatsApp] Reconnecting in 5s...`);
+                    setTimeout(() => {
+                        this.initSession(userId);
+                    }, 5000);
                 } else {
                     console.log(`[WhatsApp] Logged out ${userId}. Clearing session directory.`);
                     if (fs.existsSync(sessionDir)) {
