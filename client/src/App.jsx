@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard';
 import Campaigns from './pages/Campaigns';
 import History from './pages/History';
 import ValidatorPage from './pages/Validator';
+import Login from './pages/Login';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('waplus_token'));

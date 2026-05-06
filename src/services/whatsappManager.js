@@ -22,6 +22,7 @@ class WhatsAppManager {
         this.instances = {}; // userId -> socket
         this.qrCodes = {};   // userId -> qr string
         this.status = {};    // userId -> status ('connecting', 'connected', 'disconnected')
+        this.errors = {};    // userId -> last error message
     }
 
     async initSession(userId) {
@@ -29,20 +30,33 @@ class WhatsAppManager {
         if (!makeWASocket) {
             console.log('makeWASocket is undefined!');
             this.status[userId] = 'disconnected';
+            this.errors[userId] = 'WhatsApp engine (@whiskeysockets/baileys) is not installed on the server.';
             return;
         }
 
         const sessionDir = path.join(__dirname, '..', '..', 'sessions', userId);
         const { state, saveCreds } = await useMultiFileAuthState(sessionDir);
-        const { version } = await fetchLatestBaileysVersion();
+        
+        let version = [2, 3000, 1015901307]; // Default fallback
+        try {
+            const latest = await fetchLatestBaileysVersion();
+            version = latest.version;
+        } catch (e) {
+            console.warn(`[WhatsApp] Failed to fetch latest version, using fallback: ${e.message}`);
+        }
 
         this.status[userId] = 'connecting';
+        delete this.errors[userId];
 
         const sock = makeWASocket({
             version,
             auth: state,
             printQRInTerminal: false,
-            logger
+            logger,
+            browser: ['WAPlus', 'Chrome', '1.0.0'],
+            connectTimeoutMs: 60000,
+            defaultQueryTimeoutMs: 0,
+            keepAliveIntervalMs: 10000,
         });
 
         this.instances[userId] = sock;
@@ -53,19 +67,28 @@ class WhatsAppManager {
             const { connection, lastDisconnect, qr } = update;
             
             if (qr) {
+                console.log(`[WhatsApp] New QR code generated for ${userId}`);
                 this.qrCodes[userId] = qr;
             }
 
             if (connection === 'close') {
-                const shouldReconnect = lastDisconnect.error?.output?.statusCode !== DisconnectReason.loggedOut;
+                const statusCode = lastDisconnect?.error?.output?.statusCode;
+                const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+                console.log(`[WhatsApp] Connection closed for ${userId}. Reason: ${statusCode}, Reconnecting: ${shouldReconnect}`);
+                
                 this.status[userId] = 'disconnected';
                 if (shouldReconnect) {
                     this.initSession(userId);
                 } else {
-                    fs.rmSync(sessionDir, { recursive: true, force: true });
+                    console.log(`[WhatsApp] Logged out ${userId}. Clearing session directory.`);
+                    if (fs.existsSync(sessionDir)) {
+                        fs.rmSync(sessionDir, { recursive: true, force: true });
+                    }
                     delete this.instances[userId];
+                    delete this.qrCodes[userId];
                 }
             } else if (connection === 'open') {
+                console.log(`[WhatsApp] Connection opened for ${userId}`);
                 this.status[userId] = 'connected';
                 delete this.qrCodes[userId];
             }
@@ -104,6 +127,10 @@ class WhatsAppManager {
 
     getStatus(userId) {
         return this.status[userId] || 'disconnected';
+    }
+
+    getError(userId) {
+        return this.errors[userId] || null;
     }
 
     async sendMessage(userId, to, text) {

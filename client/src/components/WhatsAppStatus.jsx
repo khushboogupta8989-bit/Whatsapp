@@ -5,6 +5,7 @@ import { Smartphone, CheckCircle, RefreshCcw, LogOut } from 'lucide-react';
 const WhatsAppStatus = () => {
     const [status, setStatus] = useState('disconnected');
     const [qrCode, setQrCode] = useState(null);
+    const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
 
     const fetchStatus = async () => {
@@ -12,6 +13,7 @@ const WhatsAppStatus = () => {
             const res = await api.get('/whatsapp/status');
             setStatus(res.data.status);
             setQrCode(res.data.qrCode);
+            setError(res.data.error);
         } catch (error) {
             console.error("Error fetching WhatsApp status:", error);
         }
@@ -87,18 +89,43 @@ const WhatsAppStatus = () => {
             )}
 
             {status === 'connecting' && qrCode && (
-                <div className="flex flex-col items-center p-6 bg-white rounded-xl">
+                <div className="flex flex-col items-center p-6 bg-white rounded-xl shadow-inner animate-in fade-in duration-500">
                     <img src={qrCode} alt="WhatsApp QR Code" className="w-64 h-64" />
-                    <p className="text-black text-sm mt-4 text-center font-medium">
+                    <p className="text-slate-800 text-sm mt-4 text-center font-medium">
                         Open WhatsApp on your phone → Menu or Settings → Linked Devices → Link a Device
                     </p>
                 </div>
             )}
 
             {status === 'connecting' && !qrCode && (
-                <div className="flex flex-col items-center p-8">
-                    <RefreshCcw className="w-12 h-12 text-primary animate-spin mb-4" />
-                    <p className="text-dark-muted">Generating QR Code...</p>
+                <div className="flex flex-col items-center p-8 bg-dark-bg/50 rounded-xl border border-dashed border-dark-border">
+                    <div className="relative mb-6">
+                        <RefreshCcw className="w-12 h-12 text-primary animate-spin" />
+                        <div className="absolute inset-0 w-12 h-12 bg-primary/20 blur-xl animate-pulse rounded-full"></div>
+                    </div>
+                    <p className="text-dark-text font-bold text-lg mb-2">Generating Secure QR Code</p>
+                    <p className="text-dark-muted text-center text-sm max-w-xs mb-6">
+                        This usually takes 5-10 seconds. If it takes longer, please try resetting the session.
+                    </p>
+                    <button
+                        onClick={handleLogout}
+                        disabled={loading}
+                        className="text-xs font-bold text-danger/70 hover:text-danger uppercase tracking-widest flex items-center gap-2 transition-colors"
+                    >
+                        <RefreshCcw className="w-3 h-3" /> Reset Session
+                    </button>
+                </div>
+            )}
+
+            {error && (
+                <div className="mb-6 p-4 bg-danger/10 border border-danger/20 rounded-xl flex items-start gap-3">
+                    <div className="p-1 bg-danger/20 rounded-full mt-0.5">
+                        <span className="block w-2 h-2 bg-danger rounded-full"></span>
+                    </div>
+                    <div>
+                        <p className="text-danger font-bold text-sm">System Error</p>
+                        <p className="text-dark-muted text-xs mt-1">{error}</p>
+                    </div>
                 </div>
             )}
 

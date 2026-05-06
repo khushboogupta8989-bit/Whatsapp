@@ -3,10 +3,26 @@ const router = express.Router();
 const storage = require('../services/storage');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
 
-// Very basic token storage in memory for simplicity in this Node Core HTTP setup.
-// In a real app, use JWT or store sessions in a file/db.
-const activeSessions = {};
+// Persistent session storage
+const SESSIONS_FILE = path.join(__dirname, '..', '..', 'sessions', 'active_sessions.json');
+if (!fs.existsSync(SESSIONS_FILE)) {
+    fs.writeFileSync(SESSIONS_FILE, JSON.stringify({}));
+}
+
+function getActiveSessions() {
+    try {
+        return JSON.parse(fs.readFileSync(SESSIONS_FILE, 'utf8'));
+    } catch (e) {
+        return {};
+    }
+}
+
+function saveActiveSessions(sessions) {
+    fs.writeFileSync(SESSIONS_FILE, JSON.stringify(sessions, null, 2));
+}
 
 router.post('/auth/register', async (req, res) => {
     try {
@@ -50,7 +66,9 @@ router.post('/auth/login', async (req, res) => {
         }
 
         const token = crypto.randomBytes(32).toString('hex');
-        activeSessions[token] = user.id;
+        const sessions = getActiveSessions();
+        sessions[token] = user.id;
+        saveActiveSessions(sessions);
 
         res.json({ message: 'Login successful', token, userId: user.id });
     } catch (error) {
@@ -65,7 +83,8 @@ function getAuthenticatedUserId(req) {
         return null;
     }
     const token = authHeader.split(' ')[1];
-    return activeSessions[token] || null;
+    const sessions = getActiveSessions();
+    return sessions[token] || null;
 }
 
 // Attach getAuthenticatedUserId to router so we can require it easily

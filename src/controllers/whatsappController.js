@@ -23,6 +23,7 @@ router.get('/whatsapp/status', async (req, res) => {
 
     const status = whatsappManager.getStatus(userId);
     const qrText = whatsappManager.getQR(userId);
+    const error = whatsappManager.getError(userId);
 
     let qrCodeBase64 = null;
     if (qrText && status === 'connecting') {
@@ -33,7 +34,7 @@ router.get('/whatsapp/status', async (req, res) => {
         }
     }
 
-    res.json({ status, qrCode: qrCodeBase64 });
+    res.json({ status, qrCode: qrCodeBase64, error });
 });
 
 router.post('/whatsapp/logout', async (req, res) => {
