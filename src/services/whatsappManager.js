@@ -25,6 +25,22 @@ class WhatsAppManager {
         this.errors = {};    // userId -> last error message
     }
 
+    _cleanNumber(number) {
+        if (!number) return '';
+        let cleaned = String(number).replace(/\D/g, '');
+        
+        // If 10 digits, assume India and add 91
+        if (cleaned.length === 10) {
+            cleaned = '91' + cleaned;
+        } 
+        // If 11 digits and starts with 0, assume it's a 0-prefixed 10-digit number
+        else if (cleaned.length === 11 && cleaned.startsWith('0')) {
+            cleaned = '91' + cleaned.substring(1);
+        }
+        
+        return cleaned;
+    }
+
     async initSession(userId) {
         console.log(`initSession called for ${userId}`);
         if (!makeWASocket) {
@@ -139,20 +155,13 @@ class WhatsAppManager {
             throw new Error('WhatsApp not connected');
         }
         
-        // Ensure jid format and country code (defaulting to 91 for India if 10 digits)
-        let cleanNumber = to.replace(/\D/g, '');
-        if (cleanNumber.length === 10) {
-            cleanNumber = '91' + cleanNumber;
-        }
+        const cleanNumber = this._cleanNumber(to);
         const jid = cleanNumber.includes('@s.whatsapp.net') ? cleanNumber : `${cleanNumber}@s.whatsapp.net`;
-        console.log(`Attempting to send message to: ${jid}`);
+        console.log(`[WhatsApp] Sending message to: ${jid}`);
         
         const [result] = await sock.onWhatsApp(jid);
-        console.log(`onWhatsApp check for ${jid}:`, result);
-        
         if (result && result.exists) {
             await sock.sendMessage(jid, { text });
-            console.log(`Message successfully sent to ${jid}`);
             return true;
         }
         throw new Error(`Number ${cleanNumber} is not registered on WhatsApp`);
@@ -165,10 +174,7 @@ class WhatsAppManager {
         }
 
         const jids = numbers.map(num => {
-            let cleanNumber = num.replace(/\D/g, '');
-            if (cleanNumber.length === 10) {
-                cleanNumber = '91' + cleanNumber;
-            }
+            const cleanNumber = this._cleanNumber(num);
             return cleanNumber.includes('@s.whatsapp.net') ? cleanNumber : `${cleanNumber}@s.whatsapp.net`;
         });
 
