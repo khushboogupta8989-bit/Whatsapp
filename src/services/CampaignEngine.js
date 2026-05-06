@@ -91,9 +91,27 @@ function stopEngine(campaignId) {
     }
 }
 
+async function autoResumeCampaigns() {
+    const campaignsDir = path.join(__dirname, '..', '..', 'campaigns');
+    if (!fs.existsSync(campaignsDir)) return;
+
+    const files = fs.readdirSync(campaignsDir);
+    for (const file of files) {
+        if (file.endsWith('.json')) {
+            const campaignId = file.replace('.json', '');
+            const state = getCampaignState(campaignId);
+            if (state && state.status === 'running') {
+                console.log(`[Campaign] Auto-resuming campaign: ${state.name} (${campaignId})`);
+                startEngine(campaignId);
+            }
+        }
+    }
+}
+
 module.exports = {
     saveCampaignState,
     getCampaignState,
     startEngine,
-    stopEngine
+    stopEngine,
+    autoResumeCampaigns
 };

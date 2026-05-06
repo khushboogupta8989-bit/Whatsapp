@@ -46,6 +46,13 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
     logger.info(`Server running on port ${PORT}`);
+    // Auto-restore WhatsApp sessions on startup
+    const whatsappManager = require('./src/services/whatsappManager');
+    await whatsappManager.autoRestoreSessions();
+
+    // Auto-resume running campaigns
+    const CampaignEngine = require('./src/services/CampaignEngine');
+    await CampaignEngine.autoResumeCampaigns();
 });

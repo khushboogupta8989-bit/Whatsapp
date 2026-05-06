@@ -252,6 +252,26 @@ class WhatsAppManager {
         this.status[userId] = 'disconnected';
         delete this.qrCodes[userId];
     }
+
+    async autoRestoreSessions() {
+        const sessionsDir = path.join(__dirname, '..', '..', 'sessions');
+        if (!fs.existsSync(sessionsDir)) return;
+
+        const files = fs.readdirSync(sessionsDir);
+        for (const file of files) {
+            const fullPath = path.join(sessionsDir, file);
+            if (fs.statSync(fullPath).isDirectory()) {
+                // If it's a UUID folder, it's a session
+                const userId = file;
+                console.log(`[WhatsApp] Auto-restoring session for ${userId}...`);
+                try {
+                    await this.initSession(userId);
+                } catch (e) {
+                    console.error(`[WhatsApp] Failed to restore session for ${userId}:`, e.message);
+                }
+            }
+        }
+    }
 }
 
 module.exports = new WhatsAppManager();
