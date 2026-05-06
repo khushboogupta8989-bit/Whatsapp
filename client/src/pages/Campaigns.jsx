@@ -275,9 +275,23 @@ const Campaigns = () => {
                                             </div>
                                             <div className="flex flex-col ml-auto text-right">
                                                 <span className="text-dark-muted text-xs">Status</span>
-                                                <span className="font-medium capitalize text-primary">{camp.status}</span>
+                                                <span className={`font-medium capitalize ${camp.status === 'completed' ? 'text-success' : 'text-primary'}`}>{camp.status}</span>
                                             </div>
                                         </div>
+
+                                        {camp.errors && camp.errors.length > 0 && (
+                                            <div className="mt-4 p-3 bg-danger/5 rounded-lg border border-danger/10">
+                                                <p className="text-[10px] font-bold text-danger uppercase mb-2">Recent Errors</p>
+                                                <div className="space-y-1 max-h-24 overflow-y-auto">
+                                                    {camp.errors.slice(-3).reverse().map((err, i) => (
+                                                        <p key={i} className="text-xs text-dark-text flex justify-between">
+                                                            <span className="opacity-70">{err.number}:</span>
+                                                            <span className="text-danger">{err.error}</span>
+                                                        </p>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 );
                             })}
