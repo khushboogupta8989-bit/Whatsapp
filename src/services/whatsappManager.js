@@ -175,14 +175,16 @@ class WhatsAppManager {
         
         const cleanNumber = this._cleanNumber(to);
         const jid = cleanNumber.includes('@s.whatsapp.net') ? cleanNumber : `${cleanNumber}@s.whatsapp.net`;
-        console.log(`[WhatsApp] Sending message to: ${jid}`);
         
-        const [result] = await sock.onWhatsApp(jid);
-        if (result && result.exists) {
-            await sock.sendMessage(jid, { text });
-            return true;
+        try {
+            console.log(`[WhatsApp] Sending message to ${jid}...`);
+            const result = await sock.sendMessage(jid, { text });
+            console.log(`[WhatsApp] Message sent successfully to ${jid}`);
+            return result;
+        } catch (e) {
+            console.error(`[WhatsApp] Send error for ${jid}:`, e);
+            throw new Error(`Failed to send to ${cleanNumber}: ${e.message}`);
         }
-        throw new Error(`Number ${cleanNumber} is not registered on WhatsApp`);
     }
 
     async validateNumbers(userId, numbers) {
