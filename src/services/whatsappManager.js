@@ -69,12 +69,13 @@ class WhatsAppManager {
             auth: state,
             printQRInTerminal: false,
             logger,
-            browser: ['Ubuntu', 'Chrome', '20.0.04'],
-            connectTimeoutMs: 90000,
+            browser: ['macOS', 'Chrome', '121.0.0.0'],
+            connectTimeoutMs: 60000,
             defaultQueryTimeoutMs: 0,
-            keepAliveIntervalMs: 30000,
+            keepAliveIntervalMs: 60000,
             syncFullHistory: false,
             markOnlineOnConnect: true,
+            getMessage: async () => ({ text: 'hi' }) // Dummy getMessage to prevent some internal Baileys errors
         });
 
         this.instances[userId] = sock;
