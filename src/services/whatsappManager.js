@@ -199,8 +199,7 @@ class WhatsAppManager {
             return cleanNumber.includes('@s.whatsapp.net') ? cleanNumber : `${cleanNumber}@s.whatsapp.net`;
         });
 
-        // Baileys onWhatsApp can take an array but it's more reliable in small batches
-        // or individually if checking existence. However, passing the whole array is faster.
+        // Baileys onWhatsApp returns an array of { jid, exists } for only the numbers that are found
         const results = await sock.onWhatsApp(...jids);
         
         const resultMap = {};
@@ -209,12 +208,12 @@ class WhatsAppManager {
         
         // Mark existing ones as true
         results.forEach(res => {
-            // Find which input number matches this jid
-            const matchedNum = numbers.find(n => {
-                let clean = n.replace(/\D/g, '');
-                if (clean.length === 10) clean = '91' + clean;
-                return res.jid.startsWith(clean);
-            });
+            // Extract the number part from the JID (e.g., "919876543210" from "919876543210@s.whatsapp.net")
+            const resNum = res.jid.split('@')[0];
+            
+            // Find which input number matches this cleaned result number
+            const matchedNum = numbers.find(n => this._cleanNumber(n) === resNum);
+            
             if (matchedNum) {
                 resultMap[matchedNum] = res.exists;
             }
